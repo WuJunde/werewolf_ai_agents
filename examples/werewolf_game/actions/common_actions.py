@@ -2,11 +2,12 @@ from metagpt.actions import Action
 import json
 from metagpt.const import DEFAULT_WORKSPACE_ROOT
 from tenacity import retry, stop_after_attempt, wait_fixed
+from pydantic import Field
 
 class Speak(Action):
     """Action: Any speak action in a game"""
 
-    PROMPT_TEMPLATE = """
+    PROMPT_TEMPLATE : str = Field(default= """
     {
     "BACKGROUND": "It's a Werewolf game, in this game, we have 2 werewolves, 2 villagers, 1 guard, 1 witch, 1 seer. You are __profile__. Note that villager, seer, guard and witch are all in villager side, they have the same objective. Werewolves can collectively hunt ONE player at night."
     ,"HISTORY": "You have knowledge to the following conversation: __context__"
@@ -29,11 +30,11 @@ class Speak(Action):
         ,"RESPONSE": "Based on `MODERATOR_INSTRUCTION`, `RULE`, and the 'THOUGHTS' you had, express your opinion or cast a vote."
         }
     }
-    """
-    STRATEGY = """
+    """)
+    STRATEGY : str = Field(default= """
     Decide whether to reveal your identity based on benefits vs. risks, provide useful information, and vote to eliminate the most suspicious.
     If you have special abilities, pay attention to those who falsely claims your role, for they are probably werewolves.
-    """
+    """)
 
     def __init__(self, name="Speak", context=None, llm=None):
         super().__init__(name, context, llm)
@@ -93,7 +94,7 @@ class NighttimeWhispers(Action):
                 return prompt_json
     """
 
-    PROMPT_TEMPLATE = """
+    PROMPT_TEMPLATE : str = Field(default= """
     {
     "BACKGROUND": "It's a Werewolf game, in this game, we have 2 werewolves, 2 villagers, 1 guard, 1 witch, 1 seer. You are __profile__. Note that villager, seer, guard and witch are all in villager side, they have the same objective. Werewolves can collectively hunt ONE player at night."
     ,"HISTORY": "You have knowledge to the following conversation: __context__"
@@ -111,10 +112,10 @@ class NighttimeWhispers(Action):
         ,"RESPONSE": "As a __profile__, you should choose one living player from `LIVING_PLAYERS` to __action__ this night according to the THOUGHTS you have just now. Return the player name ONLY."
         }
     }
-    """
-    STRATEGY = """
+    """)
+    STRATEGY : str = Field(default=  """
     Decide which player is most threatening to you or most needs your support, take your action correspondingly.
-    """
+    """)
 
     def __init__(self, name="NightTimeWhispers", context=None, llm=None):
         super().__init__(name, context, llm)
@@ -170,7 +171,7 @@ class NighttimeWhispers(Action):
 
 class Reflect(Action):
 
-    PROMPT_TEMPLATE = """
+    PROMPT_TEMPLATE : str = Field(default= """
     {
     "BACKGROUND": "It's a Werewolf game, in this game, we have 2 werewolves, 2 villagers, 1 guard, 1 witch, 1 seer. You are __profile__. Note that villager, seer, guard and witch are all in villager side, they have the same objective. Werewolves can collectively hunt ONE player at night."
     ,"HISTORY": "You have knowledge to the following conversation: __context__"
@@ -195,7 +196,7 @@ class Reflect(Action):
                        }"
         }
     }
-    """
+    """)
 
     def __init__(self, name="Reflect", context=None, llm=None):
         super().__init__(name, context, llm)
