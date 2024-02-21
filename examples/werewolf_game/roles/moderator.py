@@ -1,16 +1,17 @@
 import re
 from collections import Counter
 from datetime import datetime
-
-from metagpt.const import WORKSPACE_ROOT
+import sys
+sys.path.append("..")
+from metagpt.const import DEFAULT_WORKSPACE_ROOT
 from metagpt.roles import Role
 from metagpt.schema import Message
 from metagpt.logs import logger
-from examples.werewolf_game.actions.moderator_actions import (
+from actions.moderator_actions import (
     InstructSpeak, ParseSpeak, AnnounceGameResult, STEP_INSTRUCTIONS
 )
-from examples.werewolf_game.actions import Hunt, Protect, Verify, Save, Poison
-from metagpt.actions import BossRequirement as UserRequirement
+from actions import Hunt, Protect, Verify, Save, Poison
+from metagpt.actions import UserRequirement
 
 
 class Moderator(Role):
@@ -186,7 +187,7 @@ class Moderator(Role):
         if self.step_idx % len(STEP_INSTRUCTIONS) == 0 or self.winner is not None:
             logger.info("a night and day cycle completed, examine all history")
             print(self.get_all_memories())
-            with open(WORKSPACE_ROOT / 'werewolf_transcript.txt', "w") as f:
+            with open(DEFAULT_WORKSPACE_ROOT / 'werewolf_transcript.txt', "w") as f:
                 f.write(self.get_all_memories())
 
     async def _think(self):

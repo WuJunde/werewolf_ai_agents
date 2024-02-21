@@ -1,4 +1,4 @@
-from examples.werewolf_game.roles.base_player import BasePlayer
+from .base_player import BasePlayer
 
 class Villager(BasePlayer):
     def __init__(

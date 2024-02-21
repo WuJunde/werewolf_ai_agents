@@ -1,5 +1,7 @@
-from examples.werewolf_game.actions import Speak
-from examples.werewolf_game.roles import BasePlayer
+import sys
+sys.path.append("..")
+from actions import Speak
+from . import BasePlayer
 from metagpt.schema import Message
 from metagpt.logs import logger
 

@@ -1,23 +1,25 @@
 import json
 import os
 import glob
-
+import sys
+sys.path.append("..")
 import chromadb
 from chromadb.utils import embedding_functions
 
-from metagpt.config import CONFIG
-from metagpt.actions import Action
-from metagpt.const import WORKSPACE_ROOT
-from metagpt.logs import logger
-from examples.werewolf_game.schema import RoleExperience
 
+from metagpt.config2 import config
+from metagpt.actions import Action
+from metagpt.const import DEFAULT_WORKSPACE_ROOT
+from metagpt.logs import logger
+from schema import RoleExperience
+
+# print("config is:", config)
 DEFAULT_COLLECTION_NAME = "role_reflection" # FIXME: some hard code for now
 EMB_FN = embedding_functions.OpenAIEmbeddingFunction(
-    api_key=CONFIG.openai_api_key,
-    api_base=CONFIG.openai_api_base,
-    api_type=CONFIG.openai_api_type,
-    model_name="text-embedding-ada-002",
-    api_version="2",
+    api_key=config.llm.api_key,
+    api_base=config.llm.base_url,
+    api_type=config.llm.api_type,
+    model_name=config.llm.model,
 )
 
 class AddNewExperiences(Action):
@@ -26,7 +28,7 @@ class AddNewExperiences(Action):
         collection_name=DEFAULT_COLLECTION_NAME, delete_existing=False,
     ):
         super().__init__(name, context, llm)
-        chroma_client = chromadb.PersistentClient(path=f"{WORKSPACE_ROOT}/werewolf_game/chroma")
+        chroma_client = chromadb.PersistentClient(path=f"{DEFAULT_WORKSPACE_ROOT}/werewolf_game/chroma")
         if delete_existing:
             try:
                 chroma_client.get_collection(name=collection_name)
@@ -82,7 +84,7 @@ class AddNewExperiences(Action):
         version = experiences[0].version
         version = "test" if not version else version
         experiences = [exp.json() for exp in experiences]
-        experience_folder = WORKSPACE_ROOT / f'werewolf_game/experiences/{version}'
+        experience_folder = DEFAULT_WORKSPACE_ROOT / f'werewolf_game/experiences/{version}'
         if not os.path.exists(experience_folder):
             os.makedirs(experience_folder)
         save_path = f"{experience_folder}/{round_id}.json"
@@ -96,7 +98,7 @@ class RetrieveExperiences(Action):
     def __init__(
         self, name="RetrieveExperiences", context=None, llm=None, collection_name=DEFAULT_COLLECTION_NAME):
         super().__init__(name, context, llm)
-        chroma_client = chromadb.PersistentClient(path=f"{WORKSPACE_ROOT}/werewolf_game/chroma")
+        chroma_client = chromadb.PersistentClient(path=f"{DEFAULT_WORKSPACE_ROOT}/werewolf_game/chroma")
         try:
             self.collection = chroma_client.get_collection(
                 name=collection_name,
@@ -166,7 +168,7 @@ class RetrieveExperiences(Action):
 
 # FIXME: below are some utility functions, should be moved to appropriate places
 def delete_collection(name):
-    chroma_client = chromadb.PersistentClient(path=f"{WORKSPACE_ROOT}/werewolf_game/chroma")
+    chroma_client = chromadb.PersistentClient(path=f"{DEFAULT_WORKSPACE_ROOT}/werewolf_game/chroma")
     chroma_client.delete_collection(name=name)
 
 def add_file_batch(folder, **kwargs):
@@ -177,7 +179,7 @@ def add_file_batch(folder, **kwargs):
         action.add_from_file(fp)
 
 def modify_collection():
-    chroma_client = chromadb.PersistentClient(path=f"{WORKSPACE_ROOT}/werewolf_game/chroma")
+    chroma_client = chromadb.PersistentClient(path=f"{DEFAULT_WORKSPACE_ROOT}/werewolf_game/chroma")
     collection = chroma_client.get_collection(name=DEFAULT_COLLECTION_NAME)
     updated_name = DEFAULT_COLLECTION_NAME + "_backup"
     collection.modify(name=updated_name)
@@ -190,5 +192,5 @@ def modify_collection():
 
 # if __name__ == "__main__":
     # delete_collection(name="test")
-    # add_file_batch(WORKSPACE_ROOT / 'werewolf_game/experiences', collection_name=DEFAULT_COLLECTION_NAME, delete_existing=True)
+    # add_file_batch(DEFAULT_WORKSPACE_ROOT / 'werewolf_game/experiences', collection_name=DEFAULT_COLLECTION_NAME, delete_existing=True)
     # modify_collection()

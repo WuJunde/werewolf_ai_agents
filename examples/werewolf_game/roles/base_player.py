@@ -21,7 +21,7 @@ class BasePlayer(Role):
         new_experience_version: str = "",
         **kwargs,
     ):
-        super().__init__(name, profile, **kwargs)
+        super().__init__(name = name, profile = profile, **kwargs)
         # 通过 set_status() 更新状态。
         self.status = 0 # 0代表活着，1代表死亡
 
@@ -29,7 +29,7 @@ class BasePlayer(Role):
         self._watch([InstructSpeak]) # 监听Moderator的指令以做行动
         special_actions = [ACTIONS[action_name] for action_name in special_action_names]
         capable_actions = [Speak] + special_actions
-        self._init_actions(capable_actions) # 给角色赋予行动技能
+        self.set_actions(capable_actions) # empower role action skills
         self.special_actions = special_actions
 
         self.use_reflection = use_reflection

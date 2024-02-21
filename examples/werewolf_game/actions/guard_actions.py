@@ -1,5 +1,5 @@
 from metagpt.actions import Action
-from examples.werewolf_game.actions import NighttimeWhispers
+from .common_actions import NighttimeWhispers
 
 class Protect(NighttimeWhispers):
 

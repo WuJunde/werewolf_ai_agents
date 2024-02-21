@@ -1,9 +1,10 @@
 from metagpt.actions import Action
-from examples.werewolf_game.actions import NighttimeWhispers
+from .common_actions import NighttimeWhispers
+from pydantic import Field
 
 class Save(NighttimeWhispers):
-    def __init__(self, name="Save", context=None, llm=None):
-        super().__init__(name, context, llm)
+    # def __init__(self, name="Save", context=None, llm=None):
+    #     super().__init__(name, context, llm)
 
     def _update_prompt_json(
         self, prompt_json: dict, role_profile: str, role_name: str, context: str, reflection: str, experiences: str
@@ -22,13 +23,13 @@ class Save(NighttimeWhispers):
         return rsp # 只需回复SAVE或PASS，不需要带上action名
 
 class Poison(NighttimeWhispers):
-    STRATEGY = """
+    STRATEGY : str =  """
     Only poison a player if you are confident he/she is a werewolf. Don't poison a player randomly or at first night.
     If someone claims to be the witch, poison him/her, because you are the only witch, he/she can only be a werewolf.
     """
 
-    def __init__(self, name="Poison", context=None, llm=None):
-        super().__init__(name, context, llm)
+    # def __init__(self, name="Poison", context=None, llm=None):
+    #     super().__init__(name, context, llm)
 
     def _update_prompt_json(
         self, prompt_json: dict, role_profile: str, role_name: str, context: str, reflection: str, experiences: str

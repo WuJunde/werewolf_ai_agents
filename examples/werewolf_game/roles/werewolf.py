@@ -1,5 +1,7 @@
-from examples.werewolf_game.roles.base_player import BasePlayer
-from examples.werewolf_game.actions import Speak, Impersonate
+from .base_player import BasePlayer
+import sys
+sys.path.append("..")
+from actions import Speak, Impersonate
 
 class Werewolf(BasePlayer):
     def __init__(
