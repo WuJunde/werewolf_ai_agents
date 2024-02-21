@@ -6,7 +6,7 @@ from metagpt.schema import Message
 from metagpt.logs import logger
 
 async def _act(self):
-    todo = self._rc.todo
+    todo = self.rc.todo
 
     memories = self.get_all_memories()
 

@@ -76,6 +76,7 @@ async def start_game(
         use_memory_selection=use_memory_selection, new_experience_version=new_experience_version,
     )
     players = [Moderator()] + players
+    env.add_roles(players)
     env.publish_message(
             Message(role="User", content=game_setup, cause_by=UserRequirement, restricted_to="Moderator")
         )

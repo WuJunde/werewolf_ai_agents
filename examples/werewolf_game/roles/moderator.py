@@ -22,9 +22,9 @@ class Moderator(Role):
             profile: str = "Moderator",
             **kwargs,
     ):
-        super().__init__(name, profile, **kwargs)
+        super().__init__(name = name, profile = profile, **kwargs)
         self._watch([UserRequirement, InstructSpeak, ParseSpeak])
-        self._init_actions([InstructSpeak, ParseSpeak, AnnounceGameResult])
+        self.set_actions([InstructSpeak, ParseSpeak, AnnounceGameResult])
         self.step_idx = 0
         self.eval_step_idx = []
 
@@ -59,14 +59,14 @@ class Moderator(Role):
     def update_player_status(self, player_names: list[str]):
         if not player_names:
             return
-        roles_in_env = self._rc.env.get_roles()
+        roles_in_env = self.rc.env.get_roles()
         for role_setting, role in roles_in_env.items():
             for player_name in player_names:
                 if player_name in role_setting:
                     role.set_status(new_status=1) # 更新为死亡
 
     def _record_all_experiences(self):
-        roles_in_env = self._rc.env.get_roles()
+        roles_in_env = self.rc.env.get_roles()
         timestamp = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
         for _, role in roles_in_env.items():
             if role == self:
@@ -193,27 +193,27 @@ class Moderator(Role):
     async def _think(self):
 
         if self.winner is not None:
-            self._rc.todo = AnnounceGameResult()
+            self.rc.todo = AnnounceGameResult()
             return
 
-        latest_msg = self._rc.memory.get()[-1]
+        latest_msg = self.rc.memory.get()[-1]
         if latest_msg.role in ["User"]:
             # 上一轮消息是用户指令，解析用户指令，开始游戏
             game_setup = latest_msg.content
             self._parse_game_setup(game_setup)
-            self._rc.todo = InstructSpeak()
+            self.rc.todo = InstructSpeak()
 
         elif latest_msg.role in [self.profile]:
             # 1. 上一轮消息是Moderator自己的指令，继续发出指令，一个事情可以分几条消息来说
             # 2. 上一轮消息是Moderator自己的解析消息，一个阶段结束，发出新一个阶段的指令
-            self._rc.todo = InstructSpeak()
+            self.rc.todo = InstructSpeak()
 
         else:
             # 上一轮消息是游戏角色的发言，解析角色的发言
-            self._rc.todo = ParseSpeak()
+            self.rc.todo = ParseSpeak()
 
     async def _act(self):
-        todo = self._rc.todo
+        todo = self.rc.todo
         logger.info(f"{self._setting} ready to {todo}")
 
         memories = self.get_all_memories(mode="msg")
@@ -246,7 +246,7 @@ class Moderator(Role):
         return msg
 
     def get_all_memories(self, mode="str") -> str:
-        memories = self._rc.memory.get()
+        memories = self.rc.memory.get()
         if mode == "str":
             memories = [f"{m.sent_from}({m.role}): {m.content}" for m in memories]
             memories = "\n".join(memories)

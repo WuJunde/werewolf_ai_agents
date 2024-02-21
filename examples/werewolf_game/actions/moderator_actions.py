@@ -80,8 +80,8 @@ STEP_INSTRUCTIONS = {
 }
 
 class InstructSpeak(Action):
-    def __init__(self, name="InstructSpeak", context=None, llm=None):
-        super().__init__(name, context, llm)
+    # def __init__(self, name="InstructSpeak", context=None, llm=None):
+    #     super().__init__(name, context, llm)
 
     async def run(self, step_idx, living_players, werewolf_players, player_hunted, player_current_dead):
         instruction_info = STEP_INSTRUCTIONS.get(step_idx, {
@@ -106,8 +106,8 @@ class InstructSpeak(Action):
         return content, instruction_info["send_to"], instruction_info["restricted_to"]
 
 class ParseSpeak(Action):
-    def __init__(self, name="ParseSpeak", context=None, llm=None):
-        super().__init__(name, context, llm)
+    # def __init__(self, name="ParseSpeak", context=None, llm=None):
+    #     super().__init__(name, context, llm)
 
     async def run(self):
         pass

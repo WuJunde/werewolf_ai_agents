@@ -20,8 +20,9 @@ class WerewolfEnv(Environment, WerewolfExtEnv):
             # Because the content of the message may be repeated, for example, killing the same person in two nights
             # Therefore, a unique timestamp prefix needs to be added so that the same message will not be automatically deduplicated when added to the memory.
             message.content = f"{self.timestamp} | " + message.content
-        self.memory.add(message)
-        self.history += f"\n{message}"
+        # self.memory.add(message)
+        self.publish_message(message=message)
+        # self.history += f"\n{message}"
 
     async def run(self, k=1):
         """Process all Role runs by order"""
