@@ -12,7 +12,7 @@ from actions.moderator_actions import (
 )
 from actions import Hunt, Protect, Verify, Save, Poison
 from metagpt.actions import UserRequirement
-
+from metagpt.const import MESSAGE_ROUTE_TO_ALL
 
 class Moderator(Role):
 
@@ -97,7 +97,7 @@ class Moderator(Role):
 
         # default return
         msg_content = "Understood"
-        restricted_to = ""
+        send_to = MESSAGE_ROUTE_TO_ALL
 
         msg_cause_by = latest_msg.cause_by
         if msg_cause_by == Hunt:
@@ -109,13 +109,13 @@ class Moderator(Role):
                 msg_content = f"{target} is a werewolf"
             else:
                 msg_content = f"{target} is a good guy"
-            restricted_to = "Moderator,Seer"
+            send_to = "Moderator,Seer"
         elif msg_cause_by == Save:
             if "pass" in latest_msg_content.lower():
                 pass
             elif not self.witch_antidote_left:
                 msg_content = "You have no antidote left and thus can not save the player"
-                restricted_to = "Moderator,Witch"
+                send_to = "Moderator,Witch"
             else:
                 self.witch_antidote_left -= 1
                 self.is_hunted_player_saved = True
@@ -124,12 +124,12 @@ class Moderator(Role):
                 pass
             elif not self.witch_poison_left:
                 msg_content = "You have no poison left and thus can not poison the player"
-                restricted_to = "Moderator,Witch"
+                send_to = "Moderator,Witch"
             else:
                 self.witch_poison_left -= 1
                 self.player_poisoned = target # "" if not poisoned and "PlayerX" if poisoned
 
-        return msg_content, restricted_to
+        return msg_content, send_to
 
     def _update_game_states(self, memories):
 
@@ -165,7 +165,9 @@ class Moderator(Role):
                 if not voted:
                     continue
                 voted_all.append(voted.group(0))
-            self.player_current_dead = [Counter(voted_all).most_common()[0][0]] # 平票时，杀最先被投的
+            # print("voted all is:", voted_all)
+            # print("Counter(voted_all).most_common() is", Counter(voted_all).most_common())
+            self.player_current_dead = [Counter(voted_all).most_common()[0][0]] # In a tie, kill the first one voted
             # print("*" * 10, "dead", self.player_current_dead)
             self.living_players = [p for p in self.living_players if p not in self.player_current_dead]
             self.update_player_status(self.player_current_dead)
@@ -226,16 +228,16 @@ class Moderator(Role):
 
         # 根据_think的结果，执行InstructSpeak还是ParseSpeak, 并将结果返回
         if isinstance(todo, InstructSpeak):
-            msg_content, msg_to_send_to, msg_restriced_to = await self._instruct_speak()
+            msg_content, msg_to_send_from, msg_to_send_to = await self._instruct_speak()
             # msg_content = f"Step {self.step_idx}: {msg_content}" # HACK: 加一个unique的step_idx避免记忆的自动去重
             msg = Message(content=msg_content, role=self.profile, sent_from=self.name,
-                          cause_by=InstructSpeak, send_to=msg_to_send_to, restricted_to=msg_restriced_to)
+                          cause_by=InstructSpeak, send_to=msg_to_send_to)
 
         elif isinstance(todo, ParseSpeak):
-            msg_content, msg_restriced_to = await self._parse_speak(memories)
+            msg_content, msg_to_send_to = await self._parse_speak(memories)
             # msg_content = f"Step {self.step_idx}: {msg_content}" # HACK: 加一个unique的step_idx避免记忆的自动去重
             msg = Message(content=msg_content, role=self.profile, sent_from=self.name,
-                          cause_by=ParseSpeak, send_to="", restricted_to=msg_restriced_to)
+                          cause_by=ParseSpeak, send_to=msg_to_send_to)
 
         elif isinstance(todo, AnnounceGameResult):
             msg_content = await AnnounceGameResult().run(winner=self.winner, win_reason=self.win_reason)

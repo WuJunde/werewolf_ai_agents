@@ -3,8 +3,7 @@ import platform
 import fire
 import random
 # import sys
-# import os
-
+# sys.path.append("..")
 # sys.path.insert(1, os.path.join(sys.path[0], '..'))
 
 from metagpt.logs import logger
@@ -77,6 +76,8 @@ async def start_game(
     )
     players = [Moderator()] + players
     env.add_roles(players)
+    for p in players:
+        env.set_addresses(p, p.addresses)
     env.publish_message(
             Message(role="User", content=game_setup, cause_by=UserRequirement, restricted_to="Moderator")
         )

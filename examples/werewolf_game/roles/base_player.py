@@ -8,6 +8,7 @@ from metagpt.logs import logger
 from actions import ACTIONS, InstructSpeak, Speak, Reflect, NighttimeWhispers
 from actions.experience_operation import AddNewExperiences, RetrieveExperiences
 from schema import RoleExperience
+from metagpt.const import MESSAGE_ROUTE_TO_ALL
 
 class BasePlayer(Role):
     def __init__(
@@ -43,35 +44,39 @@ class BasePlayer(Role):
 
         self.experiences = []
 
+        self.addresses = {name, profile}
+
     async def _observe(self) -> int:
         if self.status == 1:
-            # 死者不再参与游戏
+            # The dead no longer participate in the game
             return 0
 
         await super()._observe()
-        # 只有发给全体的（""）或发给自己的（self.profile）消息需要走下面的_react流程，
-        # 其他的收听到即可，不用做动作
+        # Only messages sent to all ("") or to oneself (self.profile) need to go through the following _react process, 
+        # The rest can be heard, no action
         self.rc.news = [msg for msg in self.rc.news if msg.send_to in ["", self.profile]]
         return len(self.rc.news)
 
     async def _think(self):
         news = self.rc.news[0]
-        assert news.cause_by == InstructSpeak # 消息为来自Moderator的指令时，才去做动作
-        if not news.restricted_to:
-            # 消息接收范围为全体角色的，做公开发言（发表投票观点也算发言）
+        assert news.cause_by == InstructSpeak # Do the action only when the message is the instruction from the Moderator
+        if MESSAGE_ROUTE_TO_ALL in news.send_to:
+            # If the scope of message reception is for all roles, make a public statement (expressing voting views is also counted as speaking)
             self.rc.todo = Speak()
-        elif self.profile in news.restricted_to.split(","):
-            # FIXME: hard code to split, restricted为"Moderator"或"Moderator,角色profile"
-            # Moderator加密发给自己的，意味着要执行角色的特殊动作
+        elif self.profile in news.send_to.split(","):
+            # FIXME: hard code to split, restricted to "Moderator" or "Moderator, profile"
+            # Moderator is encrypted to himself, meaning to perform the role's specific actions
             self.rc.todo = self.special_actions[0]()
 
     async def _act(self):
                 
         # todo为_think时确定的，有两种情况，Speak或Protect
+        #todo is set in _think, there have two cases, Speak or Protect
         todo = self.rc.todo
         logger.info(f"{self._setting}: ready to {str(todo)}")
 
         # 可以用这个函数获取该角色的全部记忆和最新的instruction
+        # this function is used to obtain the role's whole memory and newest instruction
         memories = self.get_all_memories()
         latest_instruction = self.get_latest_instruction()
         # print("*" * 10, f"{self._setting}'s current memories: {memories}", "*" * 10)
@@ -85,21 +90,22 @@ class BasePlayer(Role):
         ) if self.use_experience else ""
 
         # 根据自己定义的角色Action，对应地去run，run的入参可能不同
+        # run following the Action of the defined role, the para of run may be different
         if isinstance(todo, Speak):
             rsp = await todo.run(
                 profile=self.profile, name=self.name, context=memories,
                 latest_instruction=latest_instruction, reflection=reflection, experiences=experiences)
-            restricted_to = ""
+            send_to = ""
 
         elif isinstance(todo, NighttimeWhispers):
             rsp = await todo.run(profile=self.profile, name=self.name, context=memories, 
                 reflection=reflection, experiences=experiences)
-            restricted_to = f"Moderator,{self.profile}" # 给Moderator发送使用特殊技能的加密消息
+            send_to = f"Moderator,{self.profile}" # Send Moderator a confidential message using a special skill
 
         msg = Message(
             content=rsp, role=self.profile, sent_from=self.name,
-            cause_by=type(todo), send_to="",
-            restricted_to=restricted_to
+            cause_by=type(todo), send_from="",
+            send_to=send_to
         )
 
         self.experiences.append(

@@ -27,7 +27,7 @@ class AddNewExperiences(Action):
         self, name="AddNewExperience", context=None, llm=None,
         collection_name=DEFAULT_COLLECTION_NAME, delete_existing=False,
     ):
-        super().__init__(name, context, llm)
+        super().__init__(name = name, context = context, llm = llm)
         chroma_client = chromadb.PersistentClient(path=f"{DEFAULT_WORKSPACE_ROOT}/werewolf_game/chroma")
         if delete_existing:
             try:
