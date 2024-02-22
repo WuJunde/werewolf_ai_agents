@@ -114,7 +114,7 @@ class Environment(ExtEnv):
         return self
 
     def add_role(self, role: "Role"):
-        """增加一个在当前环境的角色
+        """
         Add a role in the current environment
         """
         self.roles[role.profile] = role
