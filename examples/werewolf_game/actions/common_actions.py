@@ -4,6 +4,26 @@ from metagpt.const import DEFAULT_WORKSPACE_ROOT
 from tenacity import retry, stop_after_attempt, wait_fixed
 from pydantic import Field
 
+def robust_json_loads(input_str):
+    input_str = str(input_str) 
+    # Attempt to find the starting index of the actual JSON part
+    try:
+        # Find the first occurrence of '{' which marks the beginning of JSON object
+        start_index = input_str.index('{')
+    except ValueError:
+        # If '{' is not found, the input is likely not a valid JSON string
+        return "Error: Input string does not contain a valid JSON object."
+
+    # Extract the substring from the first '{' to the end, trimming any leading/trailing whitespace
+    json_str = input_str[start_index:].strip()
+    print("in robust json is", json_str)
+    # Attempt to parse the extracted JSON string
+    try:
+        data = json.loads(json_str)
+        return data  # Return the parsed dictionary
+    except json.JSONDecodeError as e:
+        return f"Failed to decode JSON: {e}"
+
 class Speak(Action):
     """Action: Any speak action in a game"""
 
@@ -117,8 +137,8 @@ class NighttimeWhispers(Action):
     Decide which player is most threatening to you or most needs your support, take your action correspondingly.
     """
 
-    # def __init__(self, name="NightTimeWhispers", context=None, llm=None):
-    #     super().__init__(name, context, llm)
+    def __init__(self, name="NightTimeWhispers", context=None, llm=None):
+        super().__init__(name = name, context = context, llm = llm)
 
     def _construct_prompt_json(self, role_profile: str, role_name: str, context: str, reflection: str, experiences: str, **kwargs):
         prompt_template = self.PROMPT_TEMPLATE
@@ -198,8 +218,8 @@ class Reflect(Action):
     }
     """
 
-    # def __init__(self, name="Reflect", context=None, llm=None):
-    #     super().__init__(name, context, llm)
+    def __init__(self, name="Reflect", context=None, llm=None):
+        super().__init__(name = name, context = context, llm = llm)
 
     @retry(stop=stop_after_attempt(2), wait=wait_fixed(1))
     async def run(self, profile: str, name: str, context: str, latest_instruction: str):
@@ -210,7 +230,17 @@ class Reflect(Action):
         )
 
         rsp = await self._aask(prompt)
+        print('rsp is', rsp)
         rsp = rsp.replace("\n", " ")
-        rsp_json = json.loads(rsp)
+        print('rsp is', rsp)
+        rsp = rsp[3:-4]
+        print('rsp is', rsp)
+        rsp = rsp.replace("json", " ").strip()
+        print('rsp is', rsp)
+        # if rsp.startswith('json '):
+        #     rsp = rsp[5:].strip()
+        # print('rsp after is', rsp)
+        rsp_json = robust_json_loads(rsp)
+        # print('rsp after is', rsp_json)
 
         return json.dumps(rsp_json['REFLECTION'])

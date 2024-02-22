@@ -16,7 +16,7 @@ class Witch(BasePlayer):
     async def _think(self):
         """女巫涉及两个特殊技能，因此在此需要改写_think进行路由"""
         news = self.rc.news[0]
-        assert news.cause_by == InstructSpeak # 消息为来自Moderator的指令时，才去做动作
+        assert news.cause_by == InstructSpeak or news.cause_by == "actions.moderator_actions.InstructSpeak" # 消息为来自Moderator的指令时，才去做动作
         if not news.restricted_to:
             # 消息接收范围为全体角色的，做公开发言（发表投票观点也算发言）
             self.rc.todo = Speak()
