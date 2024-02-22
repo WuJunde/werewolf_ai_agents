@@ -107,8 +107,8 @@ class InstructSpeak(Action):
         return content, instruction_info["send_from"], instruction_info["send_to"]
 
 class ParseSpeak(Action):
-    # def __init__(self, name="ParseSpeak", context=None, llm=None):
-    #     super().__init__(name, context, llm)
+    def __init__(self, name="ParseSpeak", context=None, llm=None):
+        super().__init__(name = name, context = context, llm = llm)
 
     async def run(self):
         pass

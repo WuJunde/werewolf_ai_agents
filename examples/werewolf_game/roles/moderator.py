@@ -109,13 +109,13 @@ class Moderator(Role):
                 msg_content = f"{target} is a werewolf"
             else:
                 msg_content = f"{target} is a good guy"
-            send_to = "Moderator,Seer"
+            send_to = "Seer"
         elif msg_cause_by == Save:
             if "pass" in latest_msg_content.lower():
                 pass
             elif not self.witch_antidote_left:
                 msg_content = "You have no antidote left and thus can not save the player"
-                send_to = "Moderator,Witch"
+                send_to = "Witch"
             else:
                 self.witch_antidote_left -= 1
                 self.is_hunted_player_saved = True
@@ -124,7 +124,7 @@ class Moderator(Role):
                 pass
             elif not self.witch_poison_left:
                 msg_content = "You have no poison left and thus can not poison the player"
-                send_to = "Moderator,Witch"
+                send_to = "Witch"
             else:
                 self.witch_poison_left -= 1
                 self.player_poisoned = target # "" if not poisoned and "PlayerX" if poisoned

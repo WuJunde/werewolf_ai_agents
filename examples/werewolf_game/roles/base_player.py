@@ -54,12 +54,14 @@ class BasePlayer(Role):
         await super()._observe()
         # Only messages sent to all ("") or to oneself (self.profile) need to go through the following _react process, 
         # The rest can be heard, no action
-        self.rc.news = [msg for msg in self.rc.news if msg.send_to in ["", self.profile]]
+        
+        self.rc.news = [msg for msg in self.rc.news if any(element in [MESSAGE_ROUTE_TO_ALL, self.profile] for element in msg.send_to)]
+        logger.debug(f"{self._setting}: the news cause_by {type(self.rc.news[0].cause_by)}")
         return len(self.rc.news)
 
     async def _think(self):
         news = self.rc.news[0]
-        assert news.cause_by == InstructSpeak # Do the action only when the message is the instruction from the Moderator
+        assert news.cause_by == InstructSpeak or news.cause_by == "actions.moderator_actions.InstructSpeak" # Do the action only when the message is the instruction from the Moderator
         if MESSAGE_ROUTE_TO_ALL in news.send_to:
             # If the scope of message reception is for all roles, make a public statement (expressing voting views is also counted as speaking)
             self.rc.todo = Speak()
