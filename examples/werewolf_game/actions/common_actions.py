@@ -185,6 +185,9 @@ class NighttimeWhispers(Action):
 
         rsp = await self._aask(prompt)
         rsp = rsp.replace("\n", " ")
+        rsp = rsp[3:-4]
+        rsp = rsp.replace("json", " ").strip()
+        rsp_json = robust_json_loads(rsp)
         rsp_json = json.loads(rsp)
 
         return f"{self.name} " + rsp_json["RESPONSE"]
@@ -230,17 +233,9 @@ class Reflect(Action):
         )
 
         rsp = await self._aask(prompt)
-        print('rsp is', rsp)
         rsp = rsp.replace("\n", " ")
-        print('rsp is', rsp)
         rsp = rsp[3:-4]
-        print('rsp is', rsp)
         rsp = rsp.replace("json", " ").strip()
-        print('rsp is', rsp)
-        # if rsp.startswith('json '):
-        #     rsp = rsp[5:].strip()
-        # print('rsp after is', rsp)
         rsp_json = robust_json_loads(rsp)
-        # print('rsp after is', rsp_json)
 
         return json.dumps(rsp_json['REFLECTION'])
