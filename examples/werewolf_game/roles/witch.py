@@ -21,7 +21,7 @@ class Witch(BasePlayer):
         if MESSAGE_ROUTE_TO_ALL in news.send_to:
             # If the scope of message reception is for all roles, make a public statement (expressing voting views is also counted as speaking)
             self.rc.todo = Speak()
-        elif self.profile in news.send_to.split(","):
+        elif self.profile in news.send_to:
             # FIXME: hard code to split, restricted to "Moderator" or "Moderator, profile"
             # Moderator is encrypted to himself, meaning to perform the role's specific actions
             if "save" in news.content.lower():

@@ -46,6 +46,17 @@ class Moderator(Role):
         self.player_poisoned = None
         self.player_current_dead = []
 
+    async def _observe(self) -> int:
+
+        await super()._observe()
+        # Only messages sent to all ("") or to oneself (self.profile) need to go through the following _react process, 
+        # The rest can be heard, no action
+        self.rc.news = [msg for msg in self.rc.news if any(element in [MESSAGE_ROUTE_TO_ALL, self.profile] for element in msg.send_to) and any(element == 1 for element in msg.send_to)]
+        if not len(self.rc.news):
+            self.rc.news = [Message(content='all the players are waiting', role=self.profile, sent_from=self.name,
+                          cause_by=InstructSpeak, send_to="Moderator")]
+        return len(self.rc.news)
+
     def _parse_game_setup(self, game_setup: str):
         self.game_setup = game_setup
         self.living_players = re.findall(r"Player[0-9]+", game_setup)
@@ -230,8 +241,8 @@ class Moderator(Role):
         if isinstance(todo, InstructSpeak):
             msg_content, need_res, msg_to_send_to = await self._instruct_speak()
             # msg_content = f"Step {self.step_idx}: {msg_content}" # HACK: 加一个unique的step_idx避免记忆的自动去重
-            if need_res == 1:
-                msg_to_send_to.append(need_res)
+            if need_res == "yes":
+                msg_to_send_to = [msg_to_send_to, need_res]
             msg = Message(content=msg_content, role=self.profile, sent_from=self.name,
                           cause_by=InstructSpeak, send_to=msg_to_send_to)
 

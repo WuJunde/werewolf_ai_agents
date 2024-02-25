@@ -54,7 +54,12 @@ class BasePlayer(Role):
         await super()._observe()
         # Only messages sent to all ("") or to oneself (self.profile) need to go through the following _react process, 
         # The rest can be heard, no action
-        self.rc.news = [msg for msg in self.rc.news if any(element in [MESSAGE_ROUTE_TO_ALL, self.profile] for element in msg.send_to) and any(element == 1 for element in msg.send_to)]
+        self.rc.news = [msg for msg in self.rc.news if any(element in [MESSAGE_ROUTE_TO_ALL, self.profile] for element in msg.send_to)]
+        if len(self.rc.news):
+            logger.debug(f"{self._setting}: news before send_to is  {self.rc.news[0].send_to}")
+
+        self.rc.news = [msg for msg in self.rc.news if any(element == "yes" for element in msg.send_to)]
+        logger.debug(f"{self._setting}: news after is  {self.rc.news}")
         # logger.debug(f"{self._setting}: the news cause_by {type(self.rc.news[0].cause_by)}")
         return len(self.rc.news)
 
@@ -64,8 +69,7 @@ class BasePlayer(Role):
         if MESSAGE_ROUTE_TO_ALL in news.send_to:
             # If the scope of message reception is for all roles, make a public statement (expressing voting views is also counted as speaking)
             self.rc.todo = Speak()
-        elif self.profile in news.send_to.split(","):
-            # FIXME: hard code to split, restricted to "Moderator" or "Moderator, profile"
+        elif self.profile in news.send_to:
             # Moderator is encrypted to himself, meaning to perform the role's specific actions
             self.rc.todo = self.special_actions[0]()
 
@@ -96,16 +100,16 @@ class BasePlayer(Role):
             rsp = await todo.run(
                 profile=self.profile, name=self.name, context=memories,
                 latest_instruction=latest_instruction, reflection=reflection, experiences=experiences)
-            send_to = ""
+            send_to = MESSAGE_ROUTE_TO_ALL
 
         elif isinstance(todo, NighttimeWhispers):
             rsp = await todo.run(profile=self.profile, name=self.name, context=memories, 
                 reflection=reflection, experiences=experiences)
-            send_to = f"Moderator,{self.profile}" # Send Moderator a confidential message using a special skill
+            send_to = f"Moderator" # Send Moderator a confidential message using a special skill
 
         msg = Message(
             content=rsp, role=self.profile, sent_from=self.name,
-            cause_by=type(todo), send_from="",
+            cause_by=type(todo),
             send_to=send_to
         )
 

@@ -4,19 +4,33 @@ from metagpt.const import DEFAULT_WORKSPACE_ROOT
 from tenacity import retry, stop_after_attempt, wait_fixed
 from pydantic import Field
 
+def rindex(s, sub):
+    # Reverse the original string and the substring
+    s_reversed = s[::-1]
+    sub_reversed = sub[::-1]
+    
+    # Find the index of the reversed substring in the reversed string
+    index_reversed = s_reversed.index(sub_reversed)
+    
+    # Calculate the original index from the end of the string
+    index_original = len(s) - index_reversed - len(sub)
+    
+    return index_original
+
 def robust_json_loads(input_str):
     input_str = str(input_str) 
     # Attempt to find the starting index of the actual JSON part
     try:
         # Find the first occurrence of '{' which marks the beginning of JSON object
         start_index = input_str.index('{')
-        end_index = input_str.index('}')
+        end_index = rindex(input_str, '}')
     except ValueError:
         # If '{' is not found, the input is likely not a valid JSON string
+        print("Error: Input string does not contain a valid JSON object. the string is", input_str)
         return "Error: Input string does not contain a valid JSON object."
 
     # Extract the substring from the first '{' to the end, trimming any leading/trailing whitespace
-    json_str = input_str[start_index:end_index].strip()
+    json_str = input_str[start_index:end_index+1].strip()
     print("in robust json is", json_str)
     # Attempt to parse the extracted JSON string
     try:
@@ -57,8 +71,8 @@ class Speak(Action):
     If you have special abilities, pay attention to those who falsely claims your role, for they are probably werewolves.
     """
 
-    # def __init__(self, name="Speak", context=None, llm=None):
-    #     super().__init__(name = name, i_context = context, llm)
+    def __init__(self, name="Speak", context=None, llm=None):
+        super().__init__(name = name, context = context, llm = llm)
 
     @retry(stop=stop_after_attempt(2), wait=wait_fixed(1))
     async def run(self, profile: str, name: str, context: str, latest_instruction: str, reflection: str = "", experiences: str = ""):
@@ -76,8 +90,12 @@ class Speak(Action):
         # rsp = rsp.replace("json", " ").strip()
         rsp_json = robust_json_loads(rsp)
         # rsp_json = json.loads(rsp)
+        try:
+            res = rsp_json['RESPONSE']
+        except:
+            res = str(rsp)
 
-        return rsp_json['RESPONSE']
+        return res
 
 class NighttimeWhispers(Action):
     """
@@ -192,7 +210,7 @@ class NighttimeWhispers(Action):
         # rsp = rsp[3:-4]
         # rsp = rsp.replace("json", " ").strip()
         rsp_json = robust_json_loads(rsp)
-        rsp_json = json.loads(rsp)
+        # rsp_json = json.loads(rsp)
 
         return f"{self.name} " + rsp_json["RESPONSE"]
 
