@@ -228,8 +228,10 @@ class Moderator(Role):
 
         # 根据_think的结果，执行InstructSpeak还是ParseSpeak, 并将结果返回
         if isinstance(todo, InstructSpeak):
-            msg_content, msg_to_send_from, msg_to_send_to = await self._instruct_speak()
+            msg_content, need_res, msg_to_send_to = await self._instruct_speak()
             # msg_content = f"Step {self.step_idx}: {msg_content}" # HACK: 加一个unique的step_idx避免记忆的自动去重
+            if need_res == 1:
+                msg_to_send_to.append(need_res)
             msg = Message(content=msg_content, role=self.profile, sent_from=self.name,
                           cause_by=InstructSpeak, send_to=msg_to_send_to)
 

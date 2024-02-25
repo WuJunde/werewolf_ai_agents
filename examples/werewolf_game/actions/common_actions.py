@@ -10,12 +10,13 @@ def robust_json_loads(input_str):
     try:
         # Find the first occurrence of '{' which marks the beginning of JSON object
         start_index = input_str.index('{')
+        end_index = input_str.index('}')
     except ValueError:
         # If '{' is not found, the input is likely not a valid JSON string
         return "Error: Input string does not contain a valid JSON object."
 
     # Extract the substring from the first '{' to the end, trimming any leading/trailing whitespace
-    json_str = input_str[start_index:].strip()
+    json_str = input_str[start_index:end_index].strip()
     print("in robust json is", json_str)
     # Attempt to parse the extracted JSON string
     try:
@@ -71,7 +72,10 @@ class Speak(Action):
 
         rsp = await self._aask(prompt)
         rsp = rsp.replace("\n", " ")
-        rsp_json = json.loads(rsp)
+        # rsp = rsp[3:-4]
+        # rsp = rsp.replace("json", " ").strip()
+        rsp_json = robust_json_loads(rsp)
+        # rsp_json = json.loads(rsp)
 
         return rsp_json['RESPONSE']
 
@@ -185,8 +189,8 @@ class NighttimeWhispers(Action):
 
         rsp = await self._aask(prompt)
         rsp = rsp.replace("\n", " ")
-        rsp = rsp[3:-4]
-        rsp = rsp.replace("json", " ").strip()
+        # rsp = rsp[3:-4]
+        # rsp = rsp.replace("json", " ").strip()
         rsp_json = robust_json_loads(rsp)
         rsp_json = json.loads(rsp)
 
@@ -234,8 +238,8 @@ class Reflect(Action):
 
         rsp = await self._aask(prompt)
         rsp = rsp.replace("\n", " ")
-        rsp = rsp[3:-4]
-        rsp = rsp.replace("json", " ").strip()
+        # rsp = rsp[3:-4]
+        # rsp = rsp.replace("json", " ").strip()
         rsp_json = robust_json_loads(rsp)
 
         return json.dumps(rsp_json['REFLECTION'])

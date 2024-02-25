@@ -54,9 +54,8 @@ class BasePlayer(Role):
         await super()._observe()
         # Only messages sent to all ("") or to oneself (self.profile) need to go through the following _react process, 
         # The rest can be heard, no action
-        
-        self.rc.news = [msg for msg in self.rc.news if any(element in [MESSAGE_ROUTE_TO_ALL, self.profile] for element in msg.send_to)]
-        logger.debug(f"{self._setting}: the news cause_by {type(self.rc.news[0].cause_by)}")
+        self.rc.news = [msg for msg in self.rc.news if any(element in [MESSAGE_ROUTE_TO_ALL, self.profile] for element in msg.send_to) and any(element == 1 for element in msg.send_to)]
+        # logger.debug(f"{self._setting}: the news cause_by {type(self.rc.news[0].cause_by)}")
         return len(self.rc.news)
 
     async def _think(self):
