@@ -78,7 +78,7 @@ async def start_game(
     env.add_roles(players)
     for p in players:
         env.set_addresses(p, p.addresses)
-    env.publish_message(
+    env.pub_mes(
             Message(role="User", content=game_setup, cause_by=UserRequirement, restricted_to="Moderator")
         )
     game = Team(investment=investment, env=env, roles=players)

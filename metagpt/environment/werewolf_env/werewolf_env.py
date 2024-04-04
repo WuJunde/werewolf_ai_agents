@@ -13,7 +13,7 @@ from metagpt.schema import Message
 class WerewolfEnv(Environment, WerewolfExtEnv):
     timestamp: int = Field(default=0)
 
-    def publish_message(self, message: Message, add_timestamp: bool = True):
+    def pub_mes(self, message: Message, add_timestamp: bool = True):
         """Post information to the current environment"""
         logger.debug(f"publish_message: {message.dump()}")
         if add_timestamp:
